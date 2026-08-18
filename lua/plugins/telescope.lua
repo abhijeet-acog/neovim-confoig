@@ -1,7 +1,6 @@
 -- nvim/lua/plugins/telescope.lua
 return {
   "nvim-telescope/telescope.nvim",
-  tag = "0.1.8", -- It's recommended to pin to a specific version for stability
   dependencies = { "nvim-lua/plenary.nvim" },
   config = function()
     -- Load default ignore patterns
@@ -36,6 +35,20 @@ return {
     vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Fuzzy Find: Live Grep" })
     vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Fuzzy Find: Buffers" })
     vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Fuzzy Find: Help Tags" })
+
+    -- LSP finders
+    vim.keymap.set("n", "<leader>fo", function()
+      builtin.lsp_document_symbols({
+        symbols = { "Class", "Struct", "Interface", "Enum", "Object", "TypeParameter", "Namespace", "Module" },
+      })
+    end, { desc = "LSP: Find Object" })
+
+    vim.keymap.set("n", "<leader>fu", function()
+      builtin.lsp_document_symbols({ symbols = { "Function", "Method", "Constructor", "Operator" } })
+    end, { desc = "LSP: Find Function" })
+
+    vim.keymap.set("n", "<leader>fr", builtin.lsp_references, { desc = "LSP: Find References" })
+    vim.keymap.set("n", "<leader>ws", builtin.lsp_workspace_symbols, { desc = "LSP: Workspace Symbols" })
   end,
 }
 

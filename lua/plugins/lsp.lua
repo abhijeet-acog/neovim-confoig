@@ -83,6 +83,7 @@ return {
       "lua_ls",
       "html",
       "cssls",
+      "ts_ls",
     }
 
     mason_lspconfig.setup({
