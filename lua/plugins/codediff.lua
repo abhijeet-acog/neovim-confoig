@@ -1,3 +1,4 @@
+-- nvim/lua/plugins/codediff.lua
 return {
   "esmuellert/codediff.nvim",
   cmd = "CodeDiff",
@@ -8,6 +9,8 @@ return {
         conflict_result_position = "bottom",
         conflict_result_height = 30,
         disable_diagnostics = true,
+        original_position = "left",
+        conflict_ours_position = "right",
       },
     })
   end,
