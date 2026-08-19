@@ -4,7 +4,7 @@ return {
   dependencies = { "nvim-lua/plenary.nvim" },
   config = function()
     -- Load default ignore patterns
-    local patterns = { "node_modules", ".git/", "dist/", "build/", ".next/" }
+    local patterns = { "node_modules", ".git/", "dist/", "build/", ".next/", ".venv/"}
 
     -- Try to read project-specific .nvimignore
     local ignore_file = vim.fn.getcwd() .. "/.nvimignore"
