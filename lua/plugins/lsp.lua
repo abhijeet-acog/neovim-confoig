@@ -73,27 +73,29 @@ return {
       nmap("gr", vim.lsp.buf.references, "Go to References")
       nmap("<leader>f", function() vim.lsp.buf.format({ async = true }) end, "Format code")
     end
-
-    require("mason").setup()
+require("mason").setup()
     local mason_lspconfig = require("mason-lspconfig")
     local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-    -- This is the list that MUST have the correct name
     local servers = {
       "lua_ls",
       "html",
       "cssls",
+      "ts_ls",
     }
 
     mason_lspconfig.setup({
       ensure_installed = servers,
+      automatic_enable = true,
       handlers = {
+        -- Default handler for all servers
         function(server_name)
           require("lspconfig")[server_name].setup({
             on_attach = on_attach,
             capabilities = capabilities,
           })
         end,
+        -- Custom server override
         ["lua_ls"] = function()
           require("lspconfig").lua_ls.setup({
             on_attach = on_attach,
