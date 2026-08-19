@@ -2,11 +2,11 @@
 
 return {
   "nvim-lualine/lualine.nvim",
-  dependencies = { "nvim-tree/nvim-web-devicons" },
+  dependencies = { "nvim-tree/nvim-web-devicons", "catppuccin/nvim" },
   config = function()
     require("lualine").setup({
       options = {
-        theme = "catppuccin", -- Or any other theme you like
+        theme = require("catppuccin.utils.lualine"),
         -- ... other options
       },
       sections = {
