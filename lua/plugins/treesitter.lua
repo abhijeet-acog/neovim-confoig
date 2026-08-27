@@ -3,6 +3,7 @@
 return {
   "nvim-treesitter/nvim-treesitter",
   build = ":TSUpdate",
+  dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" },
   config = function()
     local configs = require("nvim-treesitter.configs")
 
@@ -15,32 +16,9 @@ return {
         additional_vim_regex_highlighting = false,
       },
       indent = { enable = true },
-
-      -- THIS IS THE NEW PART --
-      textobjects = {
-        select = {
-          enable = true,
-
-          -- Automatically jump forward to textobj, similar to targets.vim
-          lookahead = true,
-
-          keymaps = {
-            -- You can use the capture groups defined in textobjects.scm
-            ["af"] = "@function.outer",
-            ["if"] = "@function.inner",
-            ["ac"] = "@class.outer",
-            ["ic"] = "@class.inner",
-            ["al"] = "@loop.outer",
-            ["il"] = "@loop.inner",
-            ["aa"] = "@parameter.outer",
-            ["ia"] = "@parameter.inner",
-          },
-        },
-      },
     })
 
-    local shared = require("nvim-treesitter.textobjects.shared")
-    local ts_utils = require("nvim-treesitter.ts_utils")
+    local shared = require("nvim-treesitter-textobjects.shared")
 
     local chain = nil
 
@@ -48,24 +26,49 @@ return {
       local out = {}
       local seen = {}
       for _, cap in ipairs(captures) do
-        local _, range, node = shared.textobject_at_point(cap, "textobjects", nil, nil, {})
-        if node and range then
+        local range = shared.textobject_at_point(cap, "textobjects", nil, nil, {})
+        if range then
           local key = table.concat(range, ",")
           if not seen[key] then
             seen[key] = true
-            out[#out + 1] = { range = range, node = node, cap = cap }
+            out[#out + 1] = { range = range, cap = cap }
           end
         end
       end
       table.sort(out, function(a, b)
-        local ar = a.range[3] - a.range[1]
-        local br = b.range[3] - b.range[1]
+        local ar = a.range[4] - a.range[1]
+        local br = b.range[4] - b.range[1]
         if ar ~= br then
           return ar < br
         end
-        return (a.range[4] - a.range[2]) < (b.range[4] - b.range[2])
+        return (a.range[5] - a.range[2]) < (b.range[5] - b.range[2])
       end)
       return out
+    end
+
+    local function update_selection_range(range, selection_mode)
+      selection_mode = selection_mode or "v"
+      local mode = vim.api.nvim_get_mode().mode
+      if mode ~= selection_mode then
+        selection_mode = vim.api.nvim_replace_termcodes(selection_mode, true, true, true)
+        vim.cmd.normal({ selection_mode, bang = true })
+      end
+
+      local start_row, start_col, end_row, end_col = range[1], range[2], range[4], range[5]
+      if end_col == 0 then
+        end_row = end_row - 1
+        end_col = #vim.api.nvim_buf_get_lines(0, end_row, end_row + 1, true)[1] + 1
+      end
+
+      local end_col_offset = 1
+      if selection_mode == "v" and vim.o.selection == "exclusive" then
+        end_col_offset = 0
+      end
+      end_col = end_col - end_col_offset
+
+      vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
+      vim.cmd("normal! o")
+      vim.api.nvim_win_set_cursor(0, { end_row + 1, end_col })
     end
 
     local function selection_pos()
@@ -90,13 +93,13 @@ return {
         if chain.idx < #chain.list then
           chain.idx = chain.idx + 1
         end
-        ts_utils.update_selection(0, chain.list[chain.idx].node, "v")
+        update_selection_range(chain.list[chain.idx].range, "v")
         chain.last = { selection_pos() }
         return
       end
 
       chain = { buf = buf, list = candidates, idx = 1 }
-      ts_utils.update_selection(0, chain.list[1].node, "v")
+      update_selection_range(chain.list[1].range, "v")
       chain.last = { selection_pos() }
     end
 
